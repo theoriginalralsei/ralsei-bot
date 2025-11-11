@@ -17,9 +17,9 @@ class Action(commands.Cog):
                 ]
 
         links = [
-                "https://media1.tenor.com/m/xzhJUwNq1jkAAAAC/norep-owen.gif",
-                "https://media1.tenor.com/m/iDU4OvXi1dUAAAAC/ralsei-kris.gif",
-                "https://media1.tenor.com/m/MUJNqPh0MhwAAAAC/pixel-art-hug.gif",
+                "https://media1.tenor.com/images/xzhJUwNq1jkAAAAC/norep-owen.gif",
+                "https://media1.tenor.com/images/iDU4OvXi1dUAAAAC/ralsei-kris.gif",
+                "https://media1.tenor.com/images/MUJNqPh0MhwAAAAC/pixel-art-hug.gif",
                 "https://media.tenor.com/j2qBShhqdUYAAAAi/hugging-hug.gif" 
                 ] 
 
@@ -27,7 +27,7 @@ class Action(commands.Cog):
         chosen_message = random.choice(messages)
 
         embed = discord.Embed(
-               title=f"{interaction.user.mention} has hugged {member.mention}",
+               title=f"{interaction.user.display_name} has hugged {member.display_name}!",
                description=chosen_message,
                color=discord.Color.green()
                )
@@ -45,9 +45,9 @@ class Action(commands.Cog):
                 ]
 
         links = [
-                "https://media1.tenor.com/m/qIngZUPdp0gAAAAC/kiss-gif-kiss-gif-couple.gif",
-                "https://media1.tenor.com/m/-OT2lXTKZ4wAAAAC/kralsei-deltarune.gif",
-                "https://media1.tenor.com/m/iNfNEvkkyT0AAAAC/deltarune-ralsei.gif"
+                "https://media1.tenor.com/images/qIngZUPdp0gAAAAC/kiss-gif-kiss-gif-couple.gif",
+                "https://media1.tenor.com/images/-OT2lXTKZ4wAAAAC/kralsei-deltarune.gif",
+                "https://media1.tenor.com/images/iNfNEvkkyT0AAAAC/deltarune-ralsei.gif"
                 ] 
 
         chosen_gif = random.choice(links)
@@ -73,8 +73,8 @@ class Action(commands.Cog):
 
 
         links = [
-               "https://media.tenor.com/m/Lx6pxlvj44gAAAAC/ralsei-deltarune.gif",
-               "https://media.tenor.com/m/CnXZJo9ddGIAAAAC/ralsei-cute-ralsei.gif",
+               "https://media.tenor.com/images/Lx6pxlvj44gAAAAC/ralsei-deltarune.gif",
+               "https://media.tenor.com/images/CnXZJo9ddGIAAAAC/ralsei-cute-ralsei.gif",
                "https://media.tenor.com/lHCzlH_ez84AAAAi/cute-love.gif",
                "https://media.tenor.com/xFEinJ1BTosAAAAi/cartoon-patting.gif"
                ] 
