@@ -4,12 +4,13 @@ from discord.ext import commands
 import asyncio
 import os
 from dotenv import load_dotenv
-from db.connection import get_database
+from database.connection import get_database
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="r:", intents=intents)
+bot.db = get_database()
 
 @bot.event
 async def on_ready():
@@ -26,69 +27,69 @@ class Main(commands.Cog):
 
     @app_commands.command(name="set_welcome", description="Setup your Welcome channel")
     async def set_welcome(self, ctx: discord.Interaction, channel: discord.TextChannel):
-        connection = get_database()
-        cursor = connection.cursor()
+        connection = await get_database()
+        cursor = await connection.cursor()
 
-        cursor.execute("""
+        await cursor.execute("""
                     INSERT INTO server (guild_id, welcome_channel)
                     VALUES (?, ?)
                     ON CONFLICT(guild_id) DO UPDATE SET welcome_channel = ? """, 
                     (ctx.guild.id ,channel.id))
 
-        connection.commit()
-        cursor.close()
-        connection.close()
+        await connection.commit()
+        await cursor.close()
+        await connection.close()
 
         await ctx.send(f"Welcome channel set to {channel.mention}")
 
     @app_commands.command(name="set_counting", description="Set up your counting channel")
     async def set_counting(self, ctx: discord.Interaction, channel: discord.TextChannel):
-        connection = get_database()
-        cursor = connection.cursor()
+        connection = await get_database()
+        cursor = await connection.cursor()
 
-        cursor.execute("""
+        await cursor.execute("""
                     INSERT INTO server (guild_id, log_channel)
                     VALUES (?, ?)
                     ON CONFLICT(guild_id) DO UPDATE SET log_channel = ? """, 
                     (ctx.guild.id ,channel.id))
 
-        connection.commit()
-        cursor.close()
-        connection.close()
+        await connection.commit()
+        await cursor.close()
+        await connection.close()
 
         await ctx.send(f"Counting channel set to {channel.mention}")
 
     
     @app_commands.command(name="set_modlog", description="Set up your modlog channel")
     async def set_modlog(self, ctx: discord.Interaction, channel: discord.TextChannel):
-        connection = get_database()
-        cursor = connection.cursor()
+        connection = await get_database()
+        cursor = await connection.cursor()
 
-        cursor.execute("""
+        await cursor.execute("""
                     INSERT INTO server (guild_id, counting_channel)
                     VALUES (?, ?)
                     ON CONFLICT(guild_id) DO UPDATE SET counting_channel_channel = ? """, 
                     (ctx.guild.id ,channel.id))
 
-        connection.commit()
-        cursor.close()
-        connection.close()
+        await connection.commit()
+        await cursor.close()
+        await connection.close()
 
         await ctx.send(f"Log channel set to {channel.mention}")
 
     @commands.Cog.listener()
     async def on_member_join(self,member):
-        connection = get_database()
-        cursor = connection.cursor()
+        connection = await get_database()
+        cursor = await connection.cursor()
 
-        cursor.execute("""
+        await cursor.execute("""
                     SELECT welcome_channel FROM server
                     WHERE guild_id = ?
-                    """, (member.guild.id)
+                    """, (member.guild.id))
 
-        result = cursor.fetchone()
-        connection.close()
-        cursor.close()
+        result = await cursor.fetchone()
+        await connection.close()
+        await cursor.close()
 
         if result and result[0]:
             channel = member.guild.get_channel(result[0])
