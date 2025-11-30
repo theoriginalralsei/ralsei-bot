@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import aiosqlite
-from connection import get_database
+from database.connection import get_database
 
 class Count(commands.Cog):
     def __init__(self, bot):
@@ -12,17 +12,17 @@ class Count(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self,ctx: discord.Interaction ,message):
 
-        connection = get_database()
-        cursor = connection.cursor()
+        connection = await get_database()
+        cursor = await connection.cursor()
 
-        cursor.execute("""
+        await cursor.execute("""
                        SELECT counting_channel FROM server
                        WHERE guild_id = ?
                        """, (message.author.guild.id,))
 
-        result = cursor.fetchone() 
-        connection.close()
-        cursor.close()
+        result = await cursor.fetchone() 
+        await connection.close()
+        await cursor.close()
 
         if not result:
             return  
