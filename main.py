@@ -4,13 +4,14 @@ from discord.ext import commands
 import asyncio
 import os
 from dotenv import load_dotenv
-from database.connection import get_database
+from db.connection import get_database
+import aiosqlite as sqlite
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="r:", intents=intents)
-bot.db = get_database()
+
 
 @bot.event
 async def on_ready():
@@ -21,116 +22,135 @@ async def on_ready():
     except Exception as e:
         print(f"Failed to load commands: {e}")
 
+
 class Main(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @app_commands.command(name="set_welcome", description="Setup your Welcome channel")
-    async def set_welcome(self, ctx: discord.Interaction, channel: discord.TextChannel):
-        connection = await get_database()
-        cursor = await connection.cursor()
+    @app_commands.default_permissions(administrator=True)
+    async def set_welcome(
+        self, interaction: discord.Interaction, channel: discord.TextChannel
+    ):
+        await interaction.response.defer()
 
-        await cursor.execute("""
-                    INSERT INTO server (guild_id, welcome_channel)
-                    VALUES (?, ?)
-                    ON CONFLICT(guild_id) DO UPDATE SET welcome_channel = ? """, 
-                    (ctx.guild.id ,channel.id))
+        db = await get_database()
 
-        await connection.commit()
-        await cursor.close()
-        await connection.close()
+        await db.execute(
+            """
+                INSERT INTO server (guild_id, welcome_channel)
+                VALUES (?, ?)
+                ON CONFLICT(guild_id) DO UPDATE SET welcome_channel = excluded.welcome_channel 
+            """,
+            (
+                interaction.guild.id,
+                channel.id,
+            ),
+        )
 
-        await ctx.send(f"Welcome channel set to {channel.mention}")
+        await db.commit()
 
-    @app_commands.command(name="set_counting", description="Set up your counting channel")
-    async def set_counting(self, ctx: discord.Interaction, channel: discord.TextChannel):
-        connection = await get_database()
-        cursor = await connection.cursor()
+        await interaction.followup.send(f"Welcome channel set to {channel.mention}")
 
-        await cursor.execute("""
-                    INSERT INTO server (guild_id, log_channel)
-                    VALUES (?, ?)
-                    ON CONFLICT(guild_id) DO UPDATE SET log_channel = ? """, 
-                    (ctx.guild.id ,channel.id))
+    @app_commands.command(
+        name="set_counting", description="Set up your counting channel"
+    )
+    @app_commands.default_permissions(administrator=True)
+    async def set_counting(
+        self, interaction: discord.Interaction, channel: discord.TextChannel
+    ):
+        await interaction.response.defer()
 
-        await connection.commit()
-        await cursor.close()
-        await connection.close()
+        db = await get_database()
 
-        await ctx.send(f"Counting channel set to {channel.mention}")
+        await db.execute(
+            """
+                INSERT INTO server (guild_id, counting_channel)
+                VALUES (?, ?)
+                ON CONFLICT(guild_id) DO UPDATE SET counting_channel = excluded.counting_channel 
+        """,
+            (
+                interaction.guild.id,
+                channel.id,
+            ),
+        )
 
-    
+        await db.commit()
+
+        await interaction.followup.send(f"Counting channel set to {channel.mention}")
+
     @app_commands.command(name="set_modlog", description="Set up your modlog channel")
-    async def set_modlog(self, ctx: discord.Interaction, channel: discord.TextChannel):
-        connection = await get_database()
-        cursor = await connection.cursor()
+    @app_commands.default_permissions(administrator=True)
+    async def set_modlog(
+        self, interaction: discord.Interaction, channel: discord.TextChannel
+    ):
+        await interaction.response.defer()
 
-        await cursor.execute("""
-                    INSERT INTO server (guild_id, counting_channel)
-                    VALUES (?, ?)
-                    ON CONFLICT(guild_id) DO UPDATE SET counting_channel_channel = ? """, 
-                    (ctx.guild.id ,channel.id))
+        db = await get_database()
 
-        await connection.commit()
-        await cursor.close()
-        await connection.close()
+        await db.execute(
+            """
+                INSERT INTO server (guild_id, log_channel)
+                VALUES (?, ?)
+                ON CONFLICT(guild_id) DO UPDATE SET log_channel = excluded.log_channel 
+        """,
+            (
+                interaction.guild.id,
+                channel.id,
+            ),
+        )
 
-        await ctx.send(f"Log channel set to {channel.mention}")
+        await db.commit()
+
+        await interaction.followup.send(f"Log channel set to {channel.mention}")
 
     @commands.Cog.listener()
-    async def on_member_join(self,member):
-        connection = await get_database()
-        cursor = await connection.cursor()
+    async def on_member_join(self, member):
+        db = await get_database()
 
-        await cursor.execute("""
-                    SELECT welcome_channel FROM server
-                    WHERE guild_id = ?
-                    """, (member.guild.id))
+        cursor = await db.execute(
+            "SELECT welcome_channel FROM server WHERE guild_id = ? ", (member.guild.id,)
+        )
 
         result = await cursor.fetchone()
-        await connection.close()
-        await cursor.close()
 
         if result and result[0]:
-            channel = member.guild.get_channel(result[0])
-            await channel.send(f"Welcome {member.mention} to {member.guild.name}!")
-
-
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx,error):
-        await ctx.send(f"Error: {error}")
+            try:
+                channel_id = int(result[0])
+                channel = member.guild.get_channel(channel_id)
+                if channel:
+                    await channel.send(
+                        f"Welcome {member.mention} to {member.guild.name}!"
+                    )
+            except discord.Forbidden:
+                print(f"Missing permissions to welcome message in {channel}")
 
     @app_commands.command(name="commands", description="Shows all available commands")
     async def show_commands(self, interaction: discord.Interaction):
         embed = discord.Embed(
-            title="Commands",
-            description=None,
-            color=discord.Color.green()
-            )
+            title="Commands", description=None, color=discord.Color.green()
+        )
 
-        for cog_name, cog in bot.cogs.items():
+        for cog_name, cog in self.bot.cogs.items():
             commands_list = cog.get_commands()
-            app_command_list = cog.get_app_commands()
-
             if commands_list:
-
                 commands_info = "\n".join([f"r:{cmd.name}" for cmd in commands_list])
                 embed.add_field(
-                    name=f"{cog_name} Commands",
-                    value=commands_info,
-                    inline=False
-            ) 
-        
-            if app_command_list:
+                    name=f"{cog_name} Commands", value=commands_info, inline=False
+                )
 
-                app_command_info = "\n".join([f"/{cmd.name} - {cmd.description}" for cmd in app_command_list])
+            slash_commands = cog.get_app_commands()
+            if slash_commands:
+                app_info = "\n".join(
+                    [f"/{cmd.name} - {cmd.description}" for cmd in slash_commands]
+                )
                 embed.add_field(
-                        name=f"{cog_name} Commands",
-                        value=app_command_info,
-                        inline=False
-                    )
+                    name=f"{cog_name} App commands",
+                    value=app_info,
+                )
 
-        await interaction.response.send_message(embed=embed)  
+        await interaction.response.send_message(embed=embed)
+
 
 async def main():
     await bot.add_cog(Main(bot))
@@ -143,5 +163,6 @@ async def main():
         except Exception as e:
             print(f"Failed to load {ex}, reason {e}")
     await bot.start(TOKEN)
+
 
 asyncio.run(main())
