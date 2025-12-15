@@ -48,7 +48,7 @@ class Admin(commands.Cog):
             for i, chunk in enumerate(chunks, 1):
 
                 embed.add_field(
-                    name=None,
+                    name="",
                     value=chunk,
                     inline=False
                 )
@@ -74,13 +74,15 @@ class Admin(commands.Cog):
 
         if member == ctx.author:
             await ctx.send(f"You can't do that to yourself, {member} -_-")
+            return
 
         if member.guild_permissions.administrator:
             await ctx.send("Bro that's an admin -_-")
+            return
 
         try:
             await member.kick(reason=reason)
-            await ctx.send(embed)
+            await ctx.send(embed=embed)
         except discord.Forbidden:
             await ctx.send(f"BE GONE YOU FE- oh i cant do that -_-")
         except Exception as e:
@@ -96,9 +98,11 @@ class Admin(commands.Cog):
 
         if member == ctx.author:
             await ctx.send(f"You can't do that to yourself, {member} -_-")
+            return
 
         if member.guild_permissions.administrator:
             await ctx.send("Bro that's an admin -_-")
+            return
 
         try:
             await member.ban(reason=reason)
