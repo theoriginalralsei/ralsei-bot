@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 from db.connection import get_database
 import aiosqlite as sqlite
+import time
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
@@ -26,6 +27,13 @@ async def on_ready():
 class Main(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.starter_time = tiem.perf_counter()
+
+    @commands.command(name="ping")
+    async def ping(self, ctx: discord.Interaction):
+        self.end_time = time.perf_counter()
+        self.duration = self.starter_time - self.end_time
+        await ctx.response.send_message((f"Aaaand ping! in {self.duration}"))
 
     @app_commands.command(name="set_welcome", description="Setup your Welcome channel")
     @app_commands.default_permissions(administrator=True)
@@ -133,20 +141,14 @@ class Main(commands.Cog):
 
         for cog_name, cog in self.bot.cogs.items():
             commands_list = cog.get_commands()
-            if commands_list:
-                commands_info = "\n".join([f"r:{cmd.name}" for cmd in commands_list])
-                embed.add_field(
-                    name=f"{cog_name} Commands", value=commands_info, inline=False
-                )
-
             slash_commands = cog.get_app_commands()
-            if slash_commands:
-                app_info = "\n".join(
-                    [f"/{cmd.name} - {cmd.description}" for cmd in slash_commands]
-                )
+            if commands_list or slash_commands:
+                commands_info = "\n".join([f"r:{cmd.name}" for cmd in commands_list])
+                app_info = ",\n".join([f"r:{cmd.name}" for cmd in slash_commands])
                 embed.add_field(
-                    name=f"{cog_name} App commands",
-                    value=app_info,
+                    name=f"{cog_name} Commands",
+                    value=f"{commands_info} {app_info}",
+                    inline=False,
                 )
 
         await interaction.response.send_message(embed=embed)
