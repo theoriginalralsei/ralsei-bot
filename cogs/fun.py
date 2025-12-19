@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import random
-from discord import app_commands, client, embeds
+from discord import app_commands
 
 arr_truth = [
     "When was ya' first kiss?",
@@ -54,41 +54,21 @@ class TODView(discord.ui.View):
         await interaction.response.send_message(embed=embed, view=self)
 
 
-class Fun(commands.Cog):
-    fun_slash_group = app_commands.Group(
-        name="fun", description="For all your funni needs :3"
-    )
-
+class Fun(commands.GroupCog, name="fun"):
     def __init__(self, bot):
         self.bot = bot
-
-    @commands.group(name="fun", invoke_without_command=True)
-    async def fun(self, ctx):
-        if ctx.invoke_subcommand is None:
-            embed = discord.Embed(
-                title="Fun commands", description="", color=discord.Color.green()
-            )
-
-            for command in self.fun.commands:
-                embed.add_field(
-                    name="",
-                    value=f"{command.name} - {command.help or 'No description provided'}",
-                    inline=True,
-                )
-
-            await ctx.send(embed=embed)
 
     def coinflip(self):
         return random.randint(1, 2)
 
-    @fun.command(name="coinflip", aliases=["cf"])
+    @commands.command(name="coinflip", aliases=["cf"])
     async def coinflip_message(self, ctx):
         if self.coinflip() == 1:
             await ctx.channel.send("1. Heads")
         else:
             await ctx.channel.send("2. Tails")
 
-    @fun.command(name="Scream", aliases=["scream", "s"])
+    @commands.command(name="Scream", aliases=["scream", "s"])
     async def Scream(self, ctx):
         embed = discord.Embed(
             title=None,
@@ -98,7 +78,7 @@ class Fun(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @fun.command(name="Speak", aliases=["speak", "sp"])
+    @commands.command(name="Speak", aliases=["speak", "sp"])
     async def Speak(self, ctx, *msg):
         embed = discord.Embed(
             title=None,
@@ -108,7 +88,7 @@ class Fun(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @fun_slash_group.command(
+    @app_commands.command(
         name="8ball", description="Talk with Ralsei of True Wisdom and Knowledge"
     )
     async def ball(self, interaction: discord.Interaction, message: str):
@@ -141,7 +121,7 @@ class Fun(commands.Cog):
 
         await interaction.response.send_message(embed=embed)
 
-    @fun_slash_group.command(
+    @app_commands.command(
         name="truth_or_dare", description="Play some TOD with Ralsei!"
     )
     async def tod(self, interaction: discord.Interaction):
