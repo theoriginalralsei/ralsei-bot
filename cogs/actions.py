@@ -4,11 +4,15 @@ from discord.ext import commands
 from discord import app_commands
 
 
-class Action(commands.GroupCog, name="action"):
+class Action(commands.Cog):
+    action_group = app_commands.Group(
+        name="action", description="Hug, kiss, headpat, or even slap whoever ya want"
+    )
+
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="hug", description="Hugs someone :3")
+    @action_group.command(name="hug", description="Hugs someone :3")
     async def hug(self, interaction: discord.Interaction, member: discord.Member):
         if member.id == 1434674677682409573:
             messages = [
@@ -39,7 +43,7 @@ class Action(commands.GroupCog, name="action"):
 
         await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(name="kiss", description="Kisses someone :3")
+    @action_group.command(name="kiss", description="Kisses someone :3")
     async def kiss(self, interaction: discord.Interaction, member: discord.Member):
         if member.id == 1434674677682409573:
             messages = [
@@ -70,7 +74,7 @@ class Action(commands.GroupCog, name="action"):
 
         await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(name="headpat", description="Headpat somone :3")
+    @action_group.command(name="headpat", description="Headpat somone :3")
     async def headpat(self, interaction: discord.Interaction, member: discord.Member):
         if member.id == 1434674677682409573:
             messages = [
@@ -106,7 +110,7 @@ class Action(commands.GroupCog, name="action"):
 
         await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(
+    @action_group.command(
         name="slap", description="Slap anyone wwho gets in ya way >:D"
     )
     async def slap(self, interaction: discord.Interaction, member: discord.Member):
