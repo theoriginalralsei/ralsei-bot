@@ -1,3 +1,4 @@
+from aiohttp import client
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -5,7 +6,6 @@ import asyncio
 import os
 from dotenv import load_dotenv
 from db.connection import get_database
-import aiosqlite as sqlite
 import time
 
 load_dotenv()
@@ -25,17 +25,22 @@ async def on_ready():
 
 
 class Main(commands.Cog):
+    set_group = app_commands.Group(
+        name="set",
+        description="This is for setting up Welcome, Log, and counting channels",
+    )
+
     def __init__(self, bot):
         self.bot = bot
-        self.starter_time = tiem.perf_counter()
+        self.starter_time = time.perf_counter()
 
     @commands.command(name="ping")
-    async def ping(self, ctx: discord.Interaction):
+    async def ping(self, ctx):
         self.end_time = time.perf_counter()
-        self.duration = self.starter_time - self.end_time
-        await ctx.response.send_message((f"Aaaand ping! in {self.duration}"))
+        self.duration = self.end_time - self.starter_time
+        await ctx.send((f"Aaaand ping! in {self.duration} MS"))
 
-    @app_commands.command(name="set_welcome", description="Setup your Welcome channel")
+    @set_group.command(name="set_welcome", description="Setup your Welcome channel")
     @app_commands.default_permissions(administrator=True)
     async def set_welcome(
         self, interaction: discord.Interaction, channel: discord.TextChannel
@@ -143,11 +148,15 @@ class Main(commands.Cog):
             commands_list = cog.get_commands()
             slash_commands = cog.get_app_commands()
             if commands_list or slash_commands:
-                commands_info = "\n".join([f"r:{cmd.name}" for cmd in commands_list])
-                app_info = ",\n".join([f"r:{cmd.name}" for cmd in slash_commands])
+                commands_info = "\n".join(
+                    [f"r:{cmd.name} - {cmd.description}" for cmd in commands_list]
+                )
+                app_info = "\n".join(
+                    [f"/{cmd.name} - {cmd.description}" for cmd in slash_commands]
+                )
                 embed.add_field(
                     name=f"{cog_name} Commands",
-                    value=f"{commands_info} {app_info}",
+                    value=f"{commands_info} \n{app_info}",
                     inline=False,
                 )
 
@@ -156,7 +165,7 @@ class Main(commands.Cog):
 
 async def main():
     await bot.add_cog(Main(bot))
-    extensions = ["cogs.fun", "cogs.actions", "cogs.logs", "cogs.count", "cogs.admin"]
+    extensions = ["cogs.fun", "cogs.actions", "cogs.count", "cogs.ai", "cogs.admin"]
 
     for ex in extensions:
         try:
