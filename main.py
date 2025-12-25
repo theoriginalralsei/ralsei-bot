@@ -1,4 +1,3 @@
-from aiohttp import client
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -24,12 +23,7 @@ async def on_ready():
         print(f"Failed to load commands: {e}")
 
 
-class Main(commands.Cog):
-    set_group = app_commands.Group(
-        name="set",
-        description="This is for setting up Welcome, Log, and counting channels",
-    )
-
+class Utility(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.starter_time = time.perf_counter()
@@ -38,9 +32,9 @@ class Main(commands.Cog):
     async def ping(self, ctx):
         self.end_time = time.perf_counter()
         self.duration = self.end_time - self.starter_time
-        await ctx.send((f"Aaaand ping! in {self.duration} MS"))
+        await ctx.send((f"Aaaand pong! in {int(self.duration)}MS"))
 
-    @set_group.command(name="set_welcome", description="Setup your Welcome channel")
+    @app_commands.command(name="welcome", description="Setup your Welcome channel")
     @app_commands.default_permissions(administrator=True)
     async def set_welcome(
         self, interaction: discord.Interaction, channel: discord.TextChannel
@@ -65,9 +59,7 @@ class Main(commands.Cog):
 
         await interaction.followup.send(f"Welcome channel set to {channel.mention}")
 
-    @app_commands.command(
-        name="set_counting", description="Set up your counting channel"
-    )
+    @app_commands.command(name="counting", description="Set up your counting channel")
     @app_commands.default_permissions(administrator=True)
     async def set_counting(
         self, interaction: discord.Interaction, channel: discord.TextChannel
@@ -92,7 +84,7 @@ class Main(commands.Cog):
 
         await interaction.followup.send(f"Counting channel set to {channel.mention}")
 
-    @app_commands.command(name="set_modlog", description="Set up your modlog channel")
+    @app_commands.command(name="modlog", description="Set up your modlog channel")
     @app_commands.default_permissions(administrator=True)
     async def set_modlog(
         self, interaction: discord.Interaction, channel: discord.TextChannel
@@ -128,9 +120,9 @@ class Main(commands.Cog):
         result = await cursor.fetchone()
 
         if result and result[0]:
+            channel_id = int(result[0])
+            channel = member.guild.get_channel(channel_id)
             try:
-                channel_id = int(result[0])
-                channel = member.guild.get_channel(channel_id)
                 if channel:
                     await channel.send(
                         f"Welcome {member.mention} to {member.guild.name}!"
@@ -148,15 +140,11 @@ class Main(commands.Cog):
             commands_list = cog.get_commands()
             slash_commands = cog.get_app_commands()
             if commands_list or slash_commands:
-                commands_info = "\n".join(
-                    [f"r:{cmd.name} - {cmd.description}" for cmd in commands_list]
-                )
-                app_info = "\n".join(
-                    [f"/{cmd.name} - {cmd.description}" for cmd in slash_commands]
-                )
+                commands_info = " ".join([f"`r:{cmd.name}`" for cmd in commands_list])
+                app_info = " ".join([f"`/{cmd.name}`" for cmd in slash_commands])
                 embed.add_field(
-                    name=f"{cog_name} Commands",
-                    value=f"{commands_info} \n{app_info}",
+                    name=f"{cog_name}",
+                    value=f"{commands_info} {app_info}",
                     inline=False,
                 )
 
@@ -164,7 +152,6 @@ class Main(commands.Cog):
 
 
 async def main():
-    await bot.add_cog(Main(bot))
     extensions = ["cogs.fun", "cogs.actions", "cogs.count", "cogs.ai", "cogs.admin"]
 
     for ex in extensions:
@@ -173,6 +160,7 @@ async def main():
             print(f"Loaded {ex}!")
         except Exception as e:
             print(f"Failed to load {ex}, reason {e}")
+    await bot.add_cog(Utility(bot))
     await bot.start(TOKEN)
 
 
