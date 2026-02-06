@@ -29,35 +29,35 @@ class UserEXP(commands.Cog):
     def cog_unload(self):
         self.flush_exp.cancel()
 
-    def caclculate_exp(self, message: discord.Message) -> int:
+    def calculate_exp(self, message: discord.Message) -> int:
         base_exp = 10
-        lemgth_bonus = min(len(message.content) // 20, 5)
+        length_bonus = min(len(message.content) // 20, 5)
         attachment_bonus = len(message.attachments) * 5 if message.attachments else 0
-        return base_exp + lemgth_bonus + attachment_bonus
+        return base_exp + length_bonus + attachment_bonus
 
 
     def get_level(self, exp: int) -> int:
         return int(math.sqrt(exp // 10))
 
-    def can_gain_exp(self, user_id: int, current_time: float) -> bool:
+    def can_gain_exp(self, user_id: int, guild_id: int ,current_time: float) -> bool:
         now = time.monotonic()
-        last = self.last_message_time.get(user_id, 0)
+        last = self.last_message_time.get((user_id, guild_id), 0)
         if now - last < save_interval_seconds:
             return False
 
-        self.last_message_time[user_id] = now
+        self.last_message_time[(user_id, guild_id)] = now
         return True
 
     def add_exp_to_buffer(self, user_id: int, exp: int, guild_id):
         key = (user_id, guild_id)
-        self.buffer[key] = self.buffer.get(user_id, 0) + exp
+        self.buffer[key] = self.buffer.get(key, 0) + exp
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.author.bot or not message.guild or message.content.startswith(self.bot.command_prefix):
             return
 
-        if not self.can_gain_exp(message.author.id, time.monotonic()):
+        if not self.can_gain_exp(message.author.id, message.guild.id  ,time.monotonic()):
             return
 
         user_id = message.author.id
@@ -69,7 +69,7 @@ class UserEXP(commands.Cog):
 
         old_level = self.get_level(total_exp_before)
 
-        gained_exp = self.caclculate_exp(message)
+        gained_exp = self.calculate_exp(message)
         self.add_exp_to_buffer(user_id, gained_exp, guild_id)
 
         total_exp_after = total_exp_before + gained_exp
@@ -93,16 +93,15 @@ class UserEXP(commands.Cog):
 
         db = await get_database()
 
-        async with db.execute("BEGIN"):
-            for (user_id, guild_id), exp in self.buffer.items():
-                await db.execute(
-                    """
+        for (user_id, guild_id), exp in self.buffer.items():
+            await db.execute(
+                """
                     INSERT INTO user (user_id, guild_id ,exp)
                     VALUES (?,?, ?)
                     ON CONFLICT(user_id, guild_id) DO UPDATE SET exp = exp + excluded.exp
                     """,
-                    (user_id,guild_id,exp)
-                )
+                (user_id,guild_id,exp)
+            )
 
         await db.commit()
         self.buffer.clear()
