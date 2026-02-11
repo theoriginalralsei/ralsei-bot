@@ -31,8 +31,8 @@ class Stats(commands.Cog):
         )
 
         embed.add_field(name="User", value=f"{ctx.author.name}", inline=False)
-        embed.add_field(name="Current EXP", value=f"{await self.get_user_exp_stats(ctx.author.id)}", inline=False)
-        embed.add_field(name="Currency", value=f"{await self.get_user_cur_stats(ctx.author.id)}", inline=False)
+        embed.add_field(name="Current EXP", value=f"{await self.get_user_exp_stats(ctx.author.id, ctx.guild.id)}", inline=False)
+        embed.add_field(name="Currency", value=f"{await self.get_user_cur_stats(ctx.author.id, ctx.guild.id)}", inline=False)
 
         await ctx.send(embed=embed)
 
