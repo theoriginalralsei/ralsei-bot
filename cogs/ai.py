@@ -1,134 +1,85 @@
-from typing import Sequence
 import discord
+import asyncio
 from discord.ext import commands
 from discord import app_commands
 import torch
-from torch._higher_order_ops import wrap_activation_checkpoint
-import torch.nn as nn
+from transformers import AutoTokenizer,AutoModelForCausalLM
 
+class Generator:
+    def __init__(self, vocab_size: int, embed_size: int, hidden_size: int, num_classes: int):
+        self.model = AutoModelForCausalLM.from_pretrained("gpt2")
+        self.tokenizer = AutoTokenizer.from_pretrained("gpt2")
 
-class Brain(nn.Module):
-    def __init__(self, embed_dim=16, num_classes=3, max_vocab=1000) -> None:
-        super().__init__()
-        self.vocab = {"<pad>": 0, "<unk>": 1}
+        if torch.cuda.is_available():
+            self.model.to("cuda")
 
-        self.max_vocab = max_vocab
-        self.embed_dim = embed_dim
-        self.embedding = nn.Embedding(max_vocab, embed_dim)
-        self.fc = nn.Linear(embed_dim, num_classes)
+        self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        self.vocab_frozen = True
+        self.model.eval()
+        torch.set_grad_enabled(False)
 
-    def tokenize(self, text: str):
-        words = text.lower().split()
-        ids = []
+    def generate_sync(self, prompt: str, man_tokens: int):
+        inputs = self.tokenizer(
+            prompt, 
+            return_tensors="pt",
+            truncation=True,
+            max_length=256,
+        ).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 
-        for word in words:
-            ids.append(self.vocab.get(word, self.vocab["<unk>"]))
-        return ids
+        outputs_ids = self.model.generate(
+            **inputs,
+            max_new_tokens=man_tokens,
+            do_sample=True,
+            temperature=0.5,
+            top_p=0.95,
+            repitition_penalty=1.2,
+            pad_token_id=self.tokenizer.eos_token_id,
+        )
 
-    def forward(self, token_idx):
-        x = self.embedding(token_idx)
-        x = x.mean(dim=1)
-        return self.fc(x)
+        return self.tokenizer.decode(outputs_ids[0], skip_special_tokens=True)
 
-    def predict(self, text: str):
-        token_idx = self.tokenize(text)
-
-        if not token_idx:
-            return None
-
-        tensor = torch.tensor([token_idx])
-        with torch.no_grad():
-            logits = self.forward(tensor)
-
-            return torch.argmax(logits, dim=1).item()
-
-    def save(self, path):
-        torch.save({"state": self.state_dict(), "vocab": self.vocab}, path)
-
-    def load(self, path):
-        data = torch.load(path, map_location="cpu")
-        self.load_state_dict(data["state"])
-        self.vocab = data["vocab"]
-
-    def train_model(self, data, class_to_idx, epoch=100, lr=0.01):
-        optimizer = torch.optim.Adam(self.parameters(), lr=lr)
-        criterion = nn.CrossEntropyLoss()
-        self.train()
-
-        x = []
-        y = []
-        for sentence, word in data:
-            token_idx = self.tokenize(sentence)
-            if token_idx:
-                x.append(token_idx)
-                y.append(class_to_idx[word])
-
-        max_len = max(len(sequence) for sequence in x)
-        x_padded = [
-            sequence + [self.vocab["<pad>"]] * (max_len - len(sequence))
-            for sequence in x
-        ]
-        x_tensor = torch.tensor(x_padded, dtype=torch.long)
-        y_tensor = torch.tensor(y, dtype=torch.long)
-
-        for epoch in range(epoch):
-            optimizer.zero_grad()
-            outputs = self.forward(x_tensor)
-            loss = criterion(outputs, y_tensor)
-            loss.backward()
-            optimizer.step()
-
-        self.eval()
-
+    async def generate_text(self, prompt: str, max_tokens: int = 100) -> str:
+        return await asyncio.to_thread(self.generate_sync, prompt, max_tokens)
 
 class AI(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
-        self.brain = Brain(num_classes=3)
-        self.brain.eval()
-        self.data = [
-            ("hello", "greeting"),
-            ("hi there", "greeting"),
-            ("hey", "greeting"),
-            ("how are you", "question"),
-            ("what is this", "question"),
-            ("why did that happen", "question"),
-            ("I like turtles", "other"),
-            ("it is raining today", "other"),
-            ("I like cats :3", "other"),
-        ]
+        self.generator = Generator(vocab_size=1000, embed_size=768, hidden_size=768, num_classes=50257)
 
-        self.class_to_idx = {"greeting": 0, "question": 1, "other": 2}
+    @app_commands.command(name="ai", description="A half useful AI i made")
+    async def generate(self, interaction: discord.Interaction, prompt: str) -> None:
+        await interaction.response.defer(epthemeral=True)
 
-        for sentence, _ in self.data:
-            for word in sentence.lower().split():
-                if (
-                    word not in self.brain.vocab
-                    and len(self.brain.vocab) < self.brain.max_vocab
-                ):
-                    self.brain.vocab[word] = len(self.brain.vocab)
-
-        self.brain.train_model(self.data, self.class_to_idx, epoch=500, lr=0.05)
-        self.brain.eval()
-
-    @app_commands.command(name="ai_test", description="i need to test an ai rq")
-    async def ai(self, interaction: discord.Interaction, text: str):
-        result = self.brain.predict(text)
-
-        if result is None:
-            await interaction.response.send_message("Silence found, thought aborted")
+        if len(prompt) > 1000:
+            await interaction.followup.send("Prompt too long! (Max 1000 characters)", ephemeral=True)
             return
 
-        intent = self.data[result]
+        try:
+            embed = discord.Embed(
+                title="AI",
+                color=discord.Color.blue(),
+            )
 
-        if intent == "greeting":
-            await interaction.response.send_message("Heya. Pattern recognized")
-        elif intent == "question":
-            await interaction.response.send_message("Query detected. Noted")
-        else:
-            await interaction.response.send_message("Interesting, noted")
+            embed.add_field(name="Prompt", value=prompt, inline=False)
+            response = self.generator.generate_text(prompt)
+
+            if len(response) > 1000:
+                response = response[:1000] + "..."
+
+            embed.add_field(name="Response", value=response, inline=False)
+
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+
+        except Exception as e:
+            embed = discord.Embed(
+                title="Error",
+                description=str(e),
+                color=discord.Color.red(),
+            )
+
+            await interaction.followup.send(embed=embed, ephemeral=True)
+            print(e)
+            raise e
 
 
 async def setup(bot):
