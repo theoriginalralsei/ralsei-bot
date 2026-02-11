@@ -10,10 +10,10 @@ CREATE TABLE IF NOT EXISTS count_state(
   best_count INTEGER,
   last_user_id INTEGER
 );
-CREATE TABLE IF NOT EXISTS USER(
+CREATE TABLE IF NOT EXISTS user(
   user_id INTEGER,
-  guild_id INTEGER
-  EXP INTEGER DEFAULT 0,
-  currency INTEGER DEFAULT 100i,
+  guild_id INTEGER,
+  exp INTEGER DEFAULT 0,
+  currency INTEGER DEFAULT 100,
   PRIMARY KEY (user_id, guild_id)
 );
