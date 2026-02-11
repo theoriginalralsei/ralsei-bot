@@ -30,14 +30,14 @@ class UserEXP(commands.Cog):
         self.flush_exp.cancel()
 
     def calculate_exp(self, message: discord.Message) -> int:
-        base_exp = 10
+        base_exp = 20
         length_bonus = min(len(message.content) // 20, 5)
         attachment_bonus = len(message.attachments) * 5 if message.attachments else 0
         return base_exp + length_bonus + attachment_bonus
 
 
     def get_level(self, exp: int) -> int:
-        return int(math.sqrt(exp // 10))
+        return int(math.sqrt(exp // 50))
 
     def can_gain_exp(self, user_id: int, guild_id: int ,current_time: float) -> bool:
         now = time.monotonic()
