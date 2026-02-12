@@ -1,10 +1,47 @@
 import discord
+import ast
+import operator
 from discord.ext import commands
 from db.connection import get_database
 
 class Count(commands.Cog):
     def __init__(self, bot):
+        self.allowed_operators = {
+            ast.Add: operator.add,
+            ast.Sub: operator.sub,
+            ast.Mult: operator.mul,
+            ast.Div: operator.truediv,
+            ast.Mod: operator.mod,
+            ast.FloorDiv: operator.floordiv,
+            ast.Pow: operator.pow,
+            ast.USub: operator.neg,
+        }
+
         self.bot = bot
+
+    def safe_eval(self, expr):
+        def eval_node(node):
+            if isinstance(node, ast.Constant):
+                return node.value
+            if isinstance(node, ast.BinOp):
+                left = eval_node(node.left)
+                right = eval_node(node.right)
+                opt_type = type(node.op)
+
+                if opt_type in self.allowed_operators:
+                    return self.allowed_operators[opt_type](left, right)
+            if isinstance(node, ast.UnaryOp):
+                operand = eval_node(node.operand)
+                opt_type = type(node.op)
+                if opt_type in self.allowed_operators:
+                    return self.allowed_operators[opt_type](operand)
+            
+            raise ValueError("Invalid expression")
+
+        paresed = ast.parse(expr, mode='eval')
+        return eval_node(paresed.body)
+
+
 
     async def ensure_guild_entry(self, guild_id: int):
         db = await get_database() 
@@ -63,8 +100,17 @@ class Count(commands.Cog):
             return
 
         try:
-            number = int(message.content.strip())
-        except ValueError:
+            result = self.safe_eval(message.content.strip())
+
+            if not isinstance(result, int):
+                return
+
+            if result != int(result):
+                return
+
+            number = int(result)
+        except Exception as e:
+            print(f"Error evaluating expression: {e}")
             return
 
         current, last_id, best = await self.get_current_count(message.guild.id)
