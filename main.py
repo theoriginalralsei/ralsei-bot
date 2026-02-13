@@ -131,8 +131,8 @@ class Utility(commands.Cog):
                 except discord.Forbidden:
                     print(f"Missing permissions to welcome message in {channel}")
 
-    @app_commands.command(name="commands", description="Shows all available commands")
-    async def show_commands(self, interaction: discord.Interaction):
+    @commands.command(name="commands")
+    async def show_commands(self, ctx: discord.ext.commands.Context):
         embed = discord.Embed(
             title="Commands", description=None, color=discord.Color.green()
         )
@@ -149,7 +149,7 @@ class Utility(commands.Cog):
                     inline=False,
                 )
 
-        await interaction.response.send_message(embed=embed)
+        await ctx.send(embed=embed)
 
 
 async def main():
@@ -158,7 +158,8 @@ async def main():
         "cogs.fun",
         "cogs.actions",
         "cogs.count",
-        "cogs.ai",
+        # NOTE: cogs.ai is VERY slow if you don't have a CUDA GPU ( and could slow down your CPU ). If you want, remove the next line
+        "cogs.ai"
         "cogs.logs",
         "cogs.tod",
         "cogs.exp",
