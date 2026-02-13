@@ -9,7 +9,7 @@ import aiosqlite
 save_interval_seconds = 60
 flush_interval = 60
 
-class UserEXP(commands.Cog):
+class EXP(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.buffer: dict[tuple[int, int], int] = {}
@@ -17,6 +17,9 @@ class UserEXP(commands.Cog):
         self.level_cache: dict[tuple[int, int], int] = {}
 
         self.flush_exp.start()
+
+    exp_group = commands.Group(name="exp")
+    exp_app_group = app_commands.Group(name="exp") 
 
     async def get_user_exp(self, user_id: int, guild_id: int) -> int:
         db = await get_database()
@@ -93,7 +96,7 @@ class UserEXP(commands.Cog):
 
         print(f"{message.author} gained {gained_exp} EXP (Total: {total_exp_after})")
 
-    @commands.command(name="leaderboard")
+    @exp_group.command(name="leaderboard")
     async def leaderboard(self, ctx: commands.Context):
         rows = await self.get_guild_leaderboard(ctx.guild.id)
         embed = discord.Embed(title="Leaderboard", color=discord.Color.blue())

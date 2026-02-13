@@ -32,13 +32,16 @@ class Utility(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name="ping")
+    utility = commands.Group(name="utility")
+    utility_app = app_commands.Group(name="utility", description="Utility commands")
+
+    @utility.command(name="ping")
     async def ping(self, ctx):
         latency = round(self.bot.latency * 1000)
         await ctx.send((f"Aaaand pong! in {latency}ms"))
 
-    @app_commands.command(name="welcome", description="Setup your Welcome channel")
-    @app_commands.default_permissions(administrator=True)
+    @utility_app.command(name="welcome", description="Setup your Welcome channel")
+    @utility_app.default_permissions(administrator=True)
     async def set_welcome(
         self, interaction: discord.Interaction, channel: discord.TextChannel
     ):
@@ -62,8 +65,8 @@ class Utility(commands.Cog):
         except Exception as e:
             await interaction.followup.send(f"Error: {e}", ephemeral=True)
 
-    @app_commands.command(name="counting", description="Set up your counting channel")
-    @app_commands.default_permissions(administrator=True)
+    @utility_app.command(name="counting", description="Set up your counting channel")
+    @utility_app.default_permissions(administrator=True)
     async def set_counting(
         self, interaction: discord.Interaction, channel: discord.TextChannel
     ):
@@ -86,8 +89,8 @@ class Utility(commands.Cog):
         except Exception as e:
             await interaction.followup.send(f"Error: {e}", ephemeral=True)
 
-    @app_commands.command(name="modlog", description="Set up your modlog channel")
-    @app_commands.default_permissions(administrator=True)
+    @utility_app.command(name="modlog", description="Set up your modlog channel")
+    @utility_app.default_permissions(administrator=True)
     async def set_modlog(
         self, interaction: discord.Interaction, channel: discord.TextChannel
     ):
@@ -131,7 +134,7 @@ class Utility(commands.Cog):
                 except discord.Forbidden:
                     print(f"Missing permissions to welcome message in {channel}")
 
-    @commands.command(name="commands")
+    @utility.command(name="commands")
     async def show_commands(self, ctx: discord.ext.commands.Context):
         embed = discord.Embed(
             title="Commands", description=None, color=discord.Color.green()

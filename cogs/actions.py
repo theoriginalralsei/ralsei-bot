@@ -8,7 +8,10 @@ class Action(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="hug", description="Hugs someone :3")
+    action = app_commands.Group(name="action")
+
+
+    @action.command(name="hug", description="Hugs someone :3")
     async def hug(self, interaction: discord.Interaction, member: discord.Member):
         if member.id == 1434674677682409573:
             messages = [
@@ -42,7 +45,7 @@ class Action(commands.Cog):
 
         await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(name="kiss", description="Kisses someone :3")
+    @action.command(name="kiss", description="Kisses someone :3")
     async def kiss(self, interaction: discord.Interaction, member: discord.Member):
         if member.id == 1434674677682409573:
             messages = [
@@ -76,7 +79,7 @@ class Action(commands.Cog):
         )
         await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(name="headpat", description="Headpat somone :3")
+    @action.command(name="headpat", description="Headpat somone :3")
     async def headpat(self, interaction: discord.Interaction, member: discord.Member):
         if member.id == 1434674677682409573:
             messages = [
@@ -115,9 +118,7 @@ class Action(commands.Cog):
         )
         await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(
-        name="slap", description="Slap anyone wwho gets in ya way >:D"
-    )
+    @action.command(name="slap", description="Slap anyone wwho gets in ya way >:D")
     async def slap(self, interaction: discord.Interaction, member: discord.Member):
         if member.id == 1434674677682409573:
             messages = ["O-ow! >_<", "That was painful!", "Stop!!!", "Oh yeah- i mean OW!"]
