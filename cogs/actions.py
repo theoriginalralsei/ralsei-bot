@@ -8,8 +8,7 @@ class Action(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    action = app_commands.Group(name="action")
-
+    action = app_commands.Group(name="action", description="Mainly for RP, do whatever")
 
     @action.command(name="hug", description="Hugs someone :3")
     async def hug(self, interaction: discord.Interaction, member: discord.Member):
