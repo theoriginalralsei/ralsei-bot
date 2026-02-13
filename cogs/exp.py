@@ -18,9 +18,6 @@ class EXP(commands.Cog):
 
         self.flush_exp.start()
 
-    exp_group = commands.Group(name="exp")
-    exp_app_group = app_commands.Group(name="exp") 
-
     async def get_user_exp(self, user_id: int, guild_id: int) -> int:
         db = await get_database()
 
@@ -33,7 +30,7 @@ class EXP(commands.Cog):
     async def get_guild_leaderboard(self, guild_id: int):
         db = await get_database()
 
-        async with db.execute("SELECT user_id, exp FROM user WHERE guild_id = ? ODER BY exp", (guild_id,)) as cursor:
+        async with db.execute("SELECT user_id, exp FROM user WHERE guild_id = ? ORDER BY exp", (guild_id,)) as cursor:
             rows = await cursor.fetchall()
 
         return list(rows) if rows else []
@@ -96,7 +93,7 @@ class EXP(commands.Cog):
 
         print(f"{message.author} gained {gained_exp} EXP (Total: {total_exp_after})")
 
-    @exp_group.command(name="leaderboard")
+    @commands.command(name="leaderboard")
     async def leaderboard(self, ctx: commands.Context):
         rows = await self.get_guild_leaderboard(ctx.guild.id)
         embed = discord.Embed(title="Leaderboard", color=discord.Color.blue())
@@ -105,7 +102,7 @@ class EXP(commands.Cog):
             user = self.bot.get_user(row[0])
             if user:
                 level = self.get_level(row[1])
-                embed.add_field(name=user.name, value=f"Level: {level} | EXP: {row[1]}", inline=False)
+                embed.add_field(name=user.name, value=f"Level: {level} | EXP: {row[1]} \n ----------------", inline=False)
 
         await ctx.send(embed=embed)
 
@@ -136,4 +133,4 @@ class EXP(commands.Cog):
         await self.bot.wait_until_ready()
 
 async def setup(bot):
-    await bot.add_cog(UserEXP(bot))
+    await bot.add_cog(EXP(bot))
