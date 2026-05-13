@@ -18,6 +18,26 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="r:", intents=intents)
 starter_time = time.perf_counter()
 
+class Colors:
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    DIM = "\033[2m"
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    MAGENTA = "\033[95m"
+    CYAN = "\033[96m"
+    WHITE = "\033[97m"
+
+def log(level, msg, color=None):
+    ts = f"  {Colors.DIM}{time.strftime('%H:%M:%S')}{Colors.RESET}"
+    prefix = f"{ts} [{level}]"
+    if color:
+        print(f"{prefix} {color}{msg}{Colors.RESET}")
+    else:
+        print(f"{prefix} {msg}")
+
 setup_group = app_commands.Group(name="setup", description="Server setup commands")
 
 async def setup_database():
@@ -26,13 +46,21 @@ async def setup_database():
 @bot.event
 async def on_ready():
     sync = await bot.tree.sync()
-    print(f"Synced {len(sync)} app commands!")
-    print(f"Logged in as {bot.user}!")
+    elapsed = time.perf_counter() - starter_time
+    print()
+    print(f"{Colors.CYAN}{Colors.BOLD}  ┌{'─' * 40}┐{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}  │  {'Logged in as':<38}│{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}  │  {Colors.WHITE}{Colors.BOLD}{bot.user}{Colors.RESET}{' ' * (38 - len(str(bot.user)))}│{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}  │{'─' * 40}│{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}  │{Colors.GREEN}  Synced {len(sync)} app commands{' ' * (18 - len(str(len(sync))))}│{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}  │{Colors.MAGENTA}  Started in {elapsed:.2f}s{' ' * (26 - len(f'{elapsed:.2f}'))}│{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}  └{'─' * 40}┘{Colors.RESET}")
+    print()
 
 @bot.event
 async def on_shutdown():
     await close_database()
-    print("Database connection closed.")
+    log("CLOSE", "Database connection closed.", Colors.YELLOW)
 
 class Utility(commands.Cog):
     def __init__(self, bot):
@@ -236,7 +264,7 @@ class Utility(commands.Cog):
                         f"Welcome {member.mention} to {member.guild.name}!"
                     )
                 except discord.Forbidden:
-                    print(f"Missing permissions to welcome message in {channel}")
+                    log("WARN", f"Missing permissions for welcome message in {channel}", Colors.YELLOW)
 
     @commands.hybrid_command(name="commands", description="Displays the Commands for RB")
     async def show_commands(self, ctx: commands.Context):
@@ -267,7 +295,17 @@ class Utility(commands.Cog):
 
 
 async def main():
+    print()
+    print(f"{Colors.CYAN}{Colors.BOLD}   ╔{'═' * 43}╗{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}   ║{' ' * 43}║{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}   ║{Colors.WHITE}{'  Ralsei Bot Initializing...' : ^43}{Colors.CYAN}║{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}   ║{' ' * 43}║{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}   ╚{'═' * 43}╝{Colors.RESET}")
+    print()
+
     await setup_database()
+    log("DB", "Database initialized", Colors.GREEN)
+
     bot.tree.add_command(setup_group)
     extensions = [
         "cogs.fun",
@@ -280,14 +318,27 @@ async def main():
         "cogs.exp",
         "cogs.currency",
         "cogs.stats",
-        "cogs.admin"] 
+        "cogs.ai",
+        "cogs.admin"]
+
+    print()
+    print(f"{Colors.DIM}  {'─' * 43}{Colors.RESET}")
+    loaded_count = 0
+    failed_count = 0
 
     for ex in extensions:
         try:
             await bot.load_extension(ex)
-            print(f"Loaded {ex}!")
+            print(f"  {Colors.GREEN}✓{Colors.RESET} {Colors.WHITE}{ex}{Colors.RESET}")
+            loaded_count += 1
         except Exception as e:
-            print(f"Failed to load {ex}, reason {e}")
+            print(f"  {Colors.RED}✗{Colors.RESET} {Colors.DIM}{ex}{Colors.RESET} {Colors.DIM}~ {e}{Colors.RESET}")
+            failed_count += 1
+
+    print(f"{Colors.DIM}  {'─' * 43}{Colors.RESET}")
+    print(f"  {Colors.CYAN}{Colors.BOLD}{loaded_count}/{len(extensions)} cogs loaded{Colors.RESET}")
+    print()
+
     await bot.add_cog(Utility(bot))
     await bot.start(TOKEN)
 
