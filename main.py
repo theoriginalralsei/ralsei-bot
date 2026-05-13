@@ -289,8 +289,6 @@ async def main():
         except Exception as e:
             print(f"Failed to load {ex}, reason {e}")
     await bot.add_cog(Utility(bot))
-    from cogs.fun import fun_group
-    bot.tree.add_command(fun_group)
     await bot.start(TOKEN)
 
 
