@@ -57,11 +57,6 @@ async def on_ready():
     print(f"{Colors.CYAN}{Colors.BOLD}  └{'─' * 40}┘{Colors.RESET}")
     print()
 
-@bot.event
-async def on_shutdown():
-    await close_database()
-    log("CLOSE", "Database connection closed.", Colors.YELLOW)
-
 class Utility(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -340,7 +335,18 @@ async def main():
     print()
 
     await bot.add_cog(Utility(bot))
-    await bot.start(TOKEN)
+
+    try:
+        await bot.start(TOKEN)
+    except KeyboardInterrupt:
+        await close_database()
+    finally:
+        log("CLOSE", "Database connection closed.", Colors.YELLOW)
+        await bot.close()
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
