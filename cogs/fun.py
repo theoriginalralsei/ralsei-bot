@@ -14,6 +14,7 @@ arr_truth = [
     "Weirdest moment?",
     "How much of a nerd are you on a scale of 1-10?",
     "Have you ever had a crush on someone here?",
+    "Be honest. You Meowed at a cat once, right?"
 ]
 
 arr_dare = [
@@ -21,7 +22,8 @@ arr_dare = [
     "Show off your thighs to one person",
     "Show off your thighs to EVERYONE",
     "Share a recent shower thought you had",
-    "Recreate this bot, now."
+    "Recreate this bot, now.",
+    "Contribute to an Open Source project :3"
 ]
 
 
@@ -43,9 +45,9 @@ class TODView(discord.ui.View):
     async def truth_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         async with aiohttp.ClientSession() as session:
             question = await fetch_tod(session, "truth", "pg")
-        question = question or random.choice(arr_truth)
+        question = question if random.random() > 0.7 else random.choice(arr_truth)
         embed = discord.Embed(
-            title="Truth", description=f"**{question}**", color=discord.Color.green()
+            title="Truth", description=f"**{question} {' ' * 10}**", color=discord.Color.green()
         )
 
         embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
@@ -55,9 +57,9 @@ class TODView(discord.ui.View):
     async def dare_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         async with aiohttp.ClientSession() as session:
             dare = await fetch_tod(session, "dare", "pg")
-        dare = dare or random.choice(arr_dare)
+        dare = dare if random.random() > 0.7 else random.choice(arr_dare) 
         embed = discord.Embed(
-            title="Dare", description=f"**{dare}**", color=discord.Color.red()
+            title="Dare", description=f"**{dare} {' ' * 10}**", color=discord.Color.red()
         )
         embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
         await interaction.response.send_message(embed=embed, view=self)
@@ -66,20 +68,16 @@ class TODView(discord.ui.View):
     async def random_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         async with aiohttp.ClientSession() as session:
             if random.random() < 0.5:
-                random_tod = await fetch_tod(session, "truth", "pg")
-                if not random_tod:
-                    random_tod = random.choice(arr_truth)
+                random_tod = await fetch_tod(session, "truth", "pg") if random.random() > 0.7 else random.choice(arr_truth)
                 color = discord.Color.green()
                 title = "Truth"
             else:
-                random_tod = await fetch_tod(session, "dare", "pg")
-                if not random_tod:
-                    random_tod = random.choice(arr_dare)
+                random_tod = await fetch_tod(session, "dare", "pg") if random.random() > 0.7 else random.choice(arr_dare)
                 color = discord.Color.red()
                 title = "Dare"
         
         embed = discord.Embed(
-            title=title, description=f"**{random_tod}**", color=color
+            title=title, description=f"**{random_tod} {' ' * 10}**", color=color
         )
         embed.set_footer(text=f"Requested by {interaction.user.name}", icon_url=interaction.user.display_avatar.url)
         await interaction.response.send_message(embed=embed, view=self)
@@ -124,8 +122,8 @@ class Fun(commands.Cog):
         embed.set_footer(text=f"Asked by {interaction.user}", icon_url=user_icon)
 
         embed.add_field(
-            name="\u200b",
-            value="Ralsei of True Wisdom and Knowledge says...",
+            name="Ralsei says...",
+            value=f"{'─' * 49}",
             inline=True,
         )
 
@@ -136,10 +134,18 @@ class Fun(commands.Cog):
             "https://www.demirramon.com/gen/undertale_text_box.png?text=Don%27t&box=deltarune&character=deltarune-ralsei&expression=shadow&size=2&t=1764839390",
             "https://www.demirramon.com/gen/undertale_text_box.png?text=It%27s%20in%20Prophecy%20little%20bro.&box=deltarune&character=deltarune-ralsei&expression=winking&size=2&t=1764839486",
             "https://www.demirramon.com/gen/undertale_text_box.png?text=UwU%0Acolor%3D%23808080%20(%20it%27s%20ralsei%27s%20way%20of%20saying%20yes%20)%20color%3Dwhite&box=deltarune&character=deltarune-ralsei&expression=excited-grin&size=2&t=1764839634",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=You%20shouldn%27t.%20&box=deltarune&character=deltarune-ralsei&expression=shadow&size=1&t=1765851328"
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=I%20mean%20ig%20idrk%20&box=deltarune&character=deltarune-ralsei&expression=uninterested&size=1&t=1765851450"
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=WHAT%20KINDA%20QUESTION%20IS%20THAT%3F%3F%3F%3F%3F%3F%3F&box=deltarune&character=deltarune-ralsei&expression=screaming&size=1&t=1765851556"
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=Fuck%20you%20mean%2C%20mate%3F&box=deltarune&character=deltarune-ralsei&expression=surprised-looking-away&size=1&t=1765851501",
+            "https://www.demirramon.com/gen/undertale_text_box.png?text=You%20shouldn%27t.%20&box=deltarune&character=deltarune-ralsei&expression=shadow&size=2&t=1765851328",
+            "https://www.demirramon.com/gen/undertale_text_box.png?text=I%20mean%20ig%20idrk%20&box=deltarune&character=deltarune-ralsei&expression=uninterested&size=2&t=1765851450",
+            "https://www.demirramon.com/gen/undertale_text_box.png?text=WHAT%20KINDA%20QUESTION%20IS%20THAT%3F%3F%3F%3F%3F%3F%3F&box=deltarune&character=deltarune-ralsei&expression=screaming&size=2&t=1765851556",
+            "https://www.demirramon.com/gen/undertale_text_box.png?text=Fuck%20you%20mean%2C%20mate%3F&box=deltarune&character=deltarune-ralsei&expression=surprised-looking-away&size=2&t=1765851501",
+            "https://www.demirramon.com/gen/undertale_text_box.png?text=Absolutely%20not%2C%20buddy.&box=deltarune&character=deltarune-ralsei&expression=shadow&size=2&t=1765852100",
+            "https://www.demirramon.com/gen/undertale_text_box.png?text=I%20believe%20in%20you%21&box=deltarune&character=deltarune-ralsei&expression=excited&size=2&t=1765852200",
+            "https://www.demirramon.com/gen/undertale_text_box.png?text=Yep%21%20I%20believes%20in%20you%21&box=deltarune&character=deltarune-ralsei&expression=excited&size=2&t=1765852400",
+            "https://www.demirramon.com/gen/undertale_text_box.png?text=Nope%2C%20not%20happening.&box=deltarune&character=deltarune-ralsei&expression=uninterested&size=2&t=1765852500",
+            "https://www.demirramon.com/gen/undertale_text_box.png?text=Maybe%21%20The%20Prophecy%20is%20模糊...&box=deltarune&character=deltarune-ralsei&expression=confused&size=2&t=1765852600",
+            "https://www.demirramon.com/gen/undertale_text_box.png?text=As%20your%20friend%2C%20I%20say%20yes%21&box=deltarune&character=deltarune-ralsei&expression=happy&size=2&t=1765852700",
+            "https://www.demirramon.com/gen/undertale_text_box.png?text=That%20sounds%20a%20little%20dark%20dont%20you%20think%3F&box=deltarune&character=deltarune-ralsei&expression=worried&size=2&t=1765852800",
+            "https://www.demirramon.com/gen/undertale_text_box.png?text=Please%20don't%20ask%20me%20things%20like%20this.&box=deltarune&character=deltarune-ralsei&expression=worried&size=2&t=1765853200",
         ]
 
         embed.set_image(url=random.choice(responses))
@@ -174,7 +180,7 @@ class Fun(commands.Cog):
 
         embed = discord.Embed(
                 title="Ship",
-                description=f"Shipping {user_1.mention} X {user_2.mention}",
+                description=f"{user_1.mention} X {user_2.mention}",
                 color=discord.Color.green()
         )
 
