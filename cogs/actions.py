@@ -43,7 +43,7 @@ class Action(commands.Cog):
         embed.set_image(url=chosen_gif)
         embed.set_footer(text=f"Used by {interaction.user}", icon_url=user_icon)
 
-        await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(content=f"{member.mention}",embed=embed)
 
     @action.command(name="kiss", description="Kisses someone :3")
     async def kiss(self, interaction: discord.Interaction, member: discord.Member):
@@ -76,7 +76,7 @@ class Action(commands.Cog):
         embed.set_image(url=chosen_gif)
 
         embed.set_footer(text=f"Used by {interaction.user}", icon_url=user_icon)
-        await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(content=f"{member.mention}",embed=embed)
 
     @action.command(name="headpat", description="Headpat somone :3")
     async def headpat(self, interaction: discord.Interaction, member: discord.Member):
@@ -114,7 +114,7 @@ class Action(commands.Cog):
         embed.set_image(url=chosen_gif)
 
         embed.set_footer(text=f"Used by {interaction.user}", icon_url=user_icon)
-        await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(content=f"{member.mention}",embed=embed)
 
     @action.command(name="slap", description="Slap anyone wwho gets in ya way >:D")
     async def slap(self, interaction: discord.Interaction, member: discord.Member):
@@ -137,7 +137,7 @@ class Action(commands.Cog):
         )
         embed.set_footer(text=f"Used by {interaction.user}", icon_url=user_icon)
 
-        await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(content=f"{member.mention}",embed=embed)
 
 
 async def setup(bot):
