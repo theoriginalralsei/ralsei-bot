@@ -14,7 +14,8 @@ arr_truth = [
     "Weirdest moment?",
     "How much of a nerd are you on a scale of 1-10?",
     "Have you ever had a crush on someone here?",
-    "Be honest. You Meowed at a cat once, right?"
+    "Be honest. You Meowed at a cat once, right?",
+    "You like kissing boys, don't you~?"
 ]
 
 arr_dare = [
@@ -23,7 +24,9 @@ arr_dare = [
     "Show off your thighs to EVERYONE",
     "Share a recent shower thought you had",
     "Recreate this bot, now.",
-    "Contribute to an Open Source project :3"
+    "Contribute to an Open Source project :3",
+    "Find a cat and record yourself meowing at em :3",
+    "Kiss a guy~ I know you wanna~"
 ]
 
 
@@ -112,6 +115,7 @@ class Fun(commands.Cog):
         await ctx.send(embed=embed)
 
     @app_commands.command(name="8ball", description="Talk with Ralsei of True Wisdom and Knowledge")
+    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def ball(self, interaction: discord.Interaction, message: str):
         user_icon = interaction.user.avatar.url if interaction.user.avatar else None
         embed = discord.Embed(
@@ -128,24 +132,28 @@ class Fun(commands.Cog):
         )
 
         responses = [
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=Of%20course!%20It%27s%20in%20the%20Prophecy%20after%20all!&box=deltarune&character=deltarune-ralsei&expression=excited-grin&size=2&t=1764838835",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=Mehhhh...nah&box=deltarune&character=deltarune-ralsei&expression=uninterested&size=2&t=1764838934",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=Hmmm....%0AOf%20course!&box=deltarune&character=deltarune-ralsei&expression=excited&size=2&t=1764839027",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=Don%27t&box=deltarune&character=deltarune-ralsei&expression=shadow&size=2&t=1764839390",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=It%27s%20in%20Prophecy%20little%20bro.&box=deltarune&character=deltarune-ralsei&expression=winking&size=2&t=1764839486",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=UwU%0Acolor%3D%23808080%20(%20it%27s%20ralsei%27s%20way%20of%20saying%20yes%20)%20color%3Dwhite&box=deltarune&character=deltarune-ralsei&expression=excited-grin&size=2&t=1764839634",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=You%20shouldn%27t.%20&box=deltarune&character=deltarune-ralsei&expression=shadow&size=2&t=1765851328",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=I%20mean%20ig%20idrk%20&box=deltarune&character=deltarune-ralsei&expression=uninterested&size=2&t=1765851450",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=WHAT%20KINDA%20QUESTION%20IS%20THAT%3F%3F%3F%3F%3F%3F%3F&box=deltarune&character=deltarune-ralsei&expression=screaming&size=2&t=1765851556",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=Fuck%20you%20mean%2C%20mate%3F&box=deltarune&character=deltarune-ralsei&expression=surprised-looking-away&size=2&t=1765851501",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=Absolutely%20not%2C%20buddy.&box=deltarune&character=deltarune-ralsei&expression=shadow&size=2&t=1765852100",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=I%20believe%20in%20you%21&box=deltarune&character=deltarune-ralsei&expression=excited&size=2&t=1765852200",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=Yep%21%20I%20believes%20in%20you%21&box=deltarune&character=deltarune-ralsei&expression=excited&size=2&t=1765852400",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=Nope%2C%20not%20happening.&box=deltarune&character=deltarune-ralsei&expression=uninterested&size=2&t=1765852500",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=Maybe%21%20The%20Prophecy%20is%20模糊...&box=deltarune&character=deltarune-ralsei&expression=confused&size=2&t=1765852600",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=As%20your%20friend%2C%20I%20say%20yes%21&box=deltarune&character=deltarune-ralsei&expression=happy&size=2&t=1765852700",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=That%20sounds%20a%20little%20dark%20dont%20you%20think%3F&box=deltarune&character=deltarune-ralsei&expression=worried&size=2&t=1765852800",
-            "https://www.demirramon.com/gen/undertale_text_box.png?text=Please%20don't%20ask%20me%20things%20like%20this.&box=deltarune&character=deltarune-ralsei&expression=worried&size=2&t=1765853200",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865663.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865670.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865682.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865689.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865705.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865709.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865724.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865734.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865744.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865776.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865786.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865808.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865816.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865825.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865832.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865840.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865867.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865876.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865901.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865910.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865956.png",
+            "https://demirramon-media.s3.us-east-2.amazonaws.com/undertale/textbox/generated/13865959.png",
         ]
 
         embed.set_image(url=random.choice(responses))
@@ -153,6 +161,7 @@ class Fun(commands.Cog):
         await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name="tod", description="Play some TOD with Ralsei bot!")
+    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def tod(self, interaction: discord.Interaction):
         view = TODView()
         embed = discord.Embed(
@@ -163,6 +172,7 @@ class Fun(commands.Cog):
         await interaction.response.send_message(embed=embed, view=view)
 
     @commands.hybrid_command(name="ship", description="Ship Someoone with Someone else :3")
+    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def ship(self, ctx: commands.Context, user_1: discord.Member, user_2: discord.Member):
         ship_number = random.randint(1, 100)
         ship_meter = self.load_ship_bar(ship_number) 

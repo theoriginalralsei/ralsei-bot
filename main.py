@@ -38,8 +38,6 @@ def log(level, msg, color=None):
     else:
         print(f"{prefix} {msg}")
 
-setup_group = app_commands.Group(name="setup", description="Server setup commands")
-
 async def setup_database():
     await init_database()
 
@@ -47,19 +45,20 @@ async def setup_database():
 async def on_ready():
     sync = await bot.tree.sync()
     elapsed = time.perf_counter() - starter_time
-    print()
     print(f"{Colors.CYAN}{Colors.BOLD}  ┌{'─' * 40}┐{Colors.RESET}")
     print(f"{Colors.CYAN}{Colors.BOLD}  │  {'Logged in as':<38}│{Colors.RESET}")
-    print(f"{Colors.CYAN}{Colors.BOLD}  │  {Colors.WHITE}{Colors.BOLD}{bot.user}{Colors.RESET}{' ' * (38 - len(str(bot.user)))}│{Colors.RESET}")
-    print(f"{Colors.CYAN}{Colors.BOLD}  │{'─' * 40}│{Colors.RESET}")
-    print(f"{Colors.CYAN}{Colors.BOLD}  │{Colors.GREEN}  Synced {len(sync)} app commands{' ' * (18 - len(str(len(sync))))}│{Colors.RESET}")
-    print(f"{Colors.CYAN}{Colors.BOLD}  │{Colors.MAGENTA}  Started in {elapsed:.2f}s{' ' * (26 - len(f'{elapsed:.2f}'))}│{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}  │  {Colors.GREEN}{Colors.BOLD}{bot.user}{Colors.RESET}{' ' * (38 - len(str(bot.user)))}│{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}  ├{'─' * 40}┤{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}  │{Colors.CYAN}  Synced {len(sync)} app commands{' ' * (18 - len(str(len(sync))))}{Colors.RESET}│")
+    print(f"{Colors.CYAN}{Colors.BOLD}  │{Colors.MAGENTA}  Started in {elapsed:.2f}s{' ' * (26 - len(f'{elapsed:.2f}'))}{Colors.RESET}│")
     print(f"{Colors.CYAN}{Colors.BOLD}  └{'─' * 40}┘{Colors.RESET}")
     print()
 
 class Utility(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    setup_group = app_commands.Group(name="setup", description="Server setup commands")
 
     async def get_best_count(self, guild_id):
         db = await get_database()
@@ -192,6 +191,7 @@ class Utility(commands.Cog):
         try:
             await interaction.followup.send(f"Welcome channel set to {channel.mention}")
         except Exception as e:
+            print(e)
             await interaction.followup.send(f"Error: {e}", ephemeral=True)
 
     @setup_group.command(name="counting", description="Set up your counting channel")
@@ -262,6 +262,7 @@ class Utility(commands.Cog):
                     log("WARN", f"Missing permissions for welcome message in {channel}", Colors.YELLOW)
 
     @commands.hybrid_command(name="commands", description="Displays the Commands for RB")
+    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def show_commands(self, ctx: commands.Context):
         user_icon = ctx.author.avatar.url if ctx.author.avatar else None
         embed = discord.Embed(
@@ -291,17 +292,16 @@ class Utility(commands.Cog):
 
 async def main():
     print()
-    print(f"{Colors.CYAN}{Colors.BOLD}   ╔{'═' * 43}╗{Colors.RESET}")
-    print(f"{Colors.CYAN}{Colors.BOLD}   ║{' ' * 43}║{Colors.RESET}")
-    print(f"{Colors.CYAN}{Colors.BOLD}   ║{Colors.WHITE}{'  Ralsei Bot Initializing...' : ^43}{Colors.CYAN}║{Colors.RESET}")
-    print(f"{Colors.CYAN}{Colors.BOLD}   ║{' ' * 43}║{Colors.RESET}")
-    print(f"{Colors.CYAN}{Colors.BOLD}   ╚{'═' * 43}╝{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}  ┍{'━' * 43}┑{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}  │{' ' * 43}│{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}  │{Colors.GREEN}{'  Ralsei Bot Initializing...' : ^43}{Colors.CYAN}│{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}  │{' ' * 43}│{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}  ┕{'━' * 43}┙{Colors.RESET}")
     print()
 
     await setup_database()
     log("DB", "Database initialized", Colors.GREEN)
 
-    bot.tree.add_command(setup_group)
     extensions = [
         "cogs.fun",
         "cogs.actions",
@@ -313,10 +313,8 @@ async def main():
         "cogs.exp",
         "cogs.currency",
         "cogs.stats",
-        "cogs.ai",
         "cogs.admin"]
 
-    print()
     print(f"{Colors.DIM}  {'─' * 43}{Colors.RESET}")
     loaded_count = 0
     failed_count = 0
@@ -342,6 +340,10 @@ async def main():
         await close_database()
     finally:
         log("CLOSE", "Database connection closed.", Colors.YELLOW)
+        print(f"{Colors.RED}{Colors.BOLD}  ┌{'─' * 40}┐{Colors.RESET}")
+        print(f"{Colors.RED}{Colors.BOLD}  │  {Colors.RESET}{'Logged off as':<38}{Colors.RED}│")
+        print(f"{Colors.RED}{Colors.BOLD}  │  {Colors.GREEN}{Colors.BOLD}{bot.user}{Colors.RESET}{' ' * (38 - len(str(bot.user)))}│{Colors.RESET}")
+        print(f"{Colors.RED}{Colors.BOLD}  └{'─' * 40}┘{Colors.RESET}")
         await bot.close()
 
 
